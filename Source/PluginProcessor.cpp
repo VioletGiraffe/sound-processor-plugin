@@ -100,15 +100,14 @@ void AudioProcessorAudioProcessor::processBlock(AudioSampleBuffer& buffer, MidiB
 	// I've added this to avoid people getting screaming feedback
 	// when they first compile the plugin, but obviously you don't need to
 	// this code if your algorithm already fills all the output channels.
-	for (int i = getNumInputChannels(); i < getNumOutputChannels(); ++i)
+	for (int i = getTotalNumInputChannels(); i < getTotalNumOutputChannels(); ++i)
 		buffer.clear(i, 0, buffer.getNumSamples());
 
 	// This is the place where you'd normally do the guts of your plugin's
 	// audio processing...
-	for (int channel = 0; channel < getNumInputChannels(); ++channel)
+	for (int channel = 0; channel < getTotalNumInputChannels(); ++channel)
 	{
 		float* channelData = buffer.getWritePointer(channel);
-		channelData = channelData;
 
 		// ..do something to the data...
 	}
