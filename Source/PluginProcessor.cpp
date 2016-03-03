@@ -68,24 +68,23 @@ int AudioProcessorWithDelays::getCurrentProgram()
 	return 0;
 }
 
-void AudioProcessorWithDelays::setCurrentProgram(int index)
+void AudioProcessorWithDelays::setCurrentProgram(int /*index*/)
 {
 }
 
-const String AudioProcessorWithDelays::getProgramName(int index)
+const String AudioProcessorWithDelays::getProgramName(int /*index*/)
 {
 	return String();
 }
 
-void AudioProcessorWithDelays::changeProgramName(int index, const String& newName)
+void AudioProcessorWithDelays::changeProgramName(int /*index*/, const String& /*newName*/)
 {
 }
 
 //==============================================================================
-void AudioProcessorWithDelays::prepareToPlay(double sampleRate, int samplesPerBlock)
+void AudioProcessorWithDelays::prepareToPlay(double sampleRate, int /*samplesPerBlock*/)
 {
-	// Use this method as the place to do any pre-playback
-	// initialisation that you need..
+	_delayBuffer.resize((size_t)(sampleRate * 0.5), 0.0f); // 500 ms buffer
 }
 
 void AudioProcessorWithDelays::releaseResources()
@@ -108,13 +107,16 @@ void AudioProcessorWithDelays::processBlock(AudioSampleBuffer& buffer, MidiBuffe
 
 	for (int channel = 0; channel < getTotalNumInputChannels(); ++channel)
 	{
-		float* channelData = buffer.getWritePointer(channel);
-		if (channel == 1)
-			for (int i = 0; i < buffer.getNumSamples(); ++i)
+		if (channel == 0)
+		{
+			float* channelData = buffer.getWritePointer(channel);
+			const int numSamples = buffer.getNumSamples();
+			for (int i = 0; i < numSamples; ++i)
 			{
 				const float sample = channelData[i];
 				//channelData[i] = sample*_delayMs/500.0;
 			}
+		}
 	}
 }
 
@@ -130,14 +132,14 @@ AudioProcessorEditor* AudioProcessorWithDelays::createEditor()
 }
 
 //==============================================================================
-void AudioProcessorWithDelays::getStateInformation(MemoryBlock& destData)
+void AudioProcessorWithDelays::getStateInformation(MemoryBlock& /*destData*/)
 {
 	// You should use this method to store your parameters in the memory block.
 	// You could do that either as raw data, or use the XML or ValueTree classes
 	// as intermediaries to make it easy to save and load complex data.
 }
 
-void AudioProcessorWithDelays::setStateInformation(const void* data, int sizeInBytes)
+void AudioProcessorWithDelays::setStateInformation(const void* /*data*/, int /*sizeInBytes*/)
 {
 	// You should use this method to restore your parameters from this memory block,
 	// whose contents will have been created by the getStateInformation() call.
