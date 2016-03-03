@@ -11,6 +11,8 @@
 #include "PluginProcessor.h"
 #include "PluginEditor.h"
 
+#include <assert.h>
+
 const float SpeedOfSound = 343.2f; // m/s
 
 
@@ -104,6 +106,7 @@ void AudioProcessorWithDelays::processBlock(AudioSampleBuffer& buffer, MidiBuffe
 	for (int i = getTotalNumInputChannels(); i < getTotalNumOutputChannels(); ++i)
 		buffer.clear(i, 0, buffer.getNumSamples());
 
+	std::lock_guard<std::mutex> guard(m_mutex);
 
 	for (int channel = 0; channel < getTotalNumInputChannels(); ++channel)
 	{
@@ -111,11 +114,15 @@ void AudioProcessorWithDelays::processBlock(AudioSampleBuffer& buffer, MidiBuffe
 		{
 			float* channelData = buffer.getWritePointer(channel);
 			const int numSamples = buffer.getNumSamples();
-			for (int i = 0; i < numSamples; ++i)
-			{
-				const float sample = channelData[i];
-				//channelData[i] = sample*_delayMs/500.0;
-			}
+
+			// Delay implementation
+			assert(_delayBuffer.size() > (size_t)numSamples);
+			assert(_delayBuffer.size() - numSamples > _delayNumSamples);
+
+			memmove(_delayBuffer.data(), _delayBuffer.data() + numSamples, (_delayBuffer.size() - numSamples) * sizeof(float));
+			float* currentBlockStartInBuffer = _delayBuffer.data() + _delayBuffer.size() - numSamples;
+			memcpy(currentBlockStartInBuffer, channelData, numSamples * sizeof(float));
+			memcpy(channelData, currentBlockStartInBuffer - _delayNumSamples, numSamples * sizeof(float));
 		}
 	}
 }
@@ -147,6 +154,7 @@ void AudioProcessorWithDelays::setStateInformation(const void* /*data*/, int /*s
 
 void AudioProcessorWithDelays::onDelayChanged(double delay)
 {
+	std::lock_guard<std::mutex> guard(m_mutex);
 	_delayMs = (float)delay;
 	_delayNumSamples = (uint32_t)(_delayMs * getSampleRate() / 1000.0f);
 }

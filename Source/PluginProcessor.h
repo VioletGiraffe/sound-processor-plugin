@@ -3,7 +3,7 @@
 
 #include "../JuceLibraryCode/JuceHeader.h"
 
-#include <atomic>
+#include <mutex>
 #include <vector>
 
 
@@ -50,11 +50,12 @@ public:
 	double delay() const;
 
 private:
-	std::atomic<float> _delayMs {0.0f};
-	std::atomic<uint32_t> _delayNumSamples {0};
+	float _delayMs = 0.0f;
+	uint32_t _delayNumSamples = 0;
 
 	std::vector<float> _delayBuffer;
 
+	std::mutex m_mutex;
 
 	//==============================================================================
 	JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(AudioProcessorWithDelays)
