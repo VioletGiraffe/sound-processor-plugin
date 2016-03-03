@@ -19,6 +19,12 @@ AudioProcessorAudioProcessorEditor::AudioProcessorAudioProcessorEditor(AudioProc
 	// editor's size to whatever you need it to be.
 	setSize(400, 300);
 
+	_onOffSwitch.setComponentID("onOffSwitch");
+	_onOffSwitch.setButtonText("On");
+	_onOffSwitch.addListener(this);
+	addAndMakeVisible(_onOffSwitch);
+	_onOffSwitch.setBounds(RelativeRectangle("parent.left + 10, parent.top + 20, left + 50, top + 20"));
+
 	_delaySlider.setSliderStyle(Slider::LinearBar);
 	_delaySlider.setRange(0.0, 15.0, 0.01);
 	_delaySlider.setTextBoxStyle(Slider::NoTextBox, false, 90, 0);
@@ -31,7 +37,7 @@ AudioProcessorAudioProcessorEditor::AudioProcessorAudioProcessorEditor(AudioProc
 	const int textEditWidth = 50;
 
 	addAndMakeVisible(_delaySlider);
-	_delaySlider.setBounds(RelativeRectangle(String("parent.left + 20, parent.top + 20, parent.right - 20 - 10 - ") + String(textEditWidth) + ", top + 20"));
+	_delaySlider.setBounds(RelativeRectangle(String("onOffSwitch.right + 10, parent.top + 20, parent.right - 20 - 10 - ") + String(textEditWidth) + ", top + 20"));
 
 	_editor.setMultiLine(false);
 	_editor.setComponentID("delayEditor");
@@ -39,7 +45,6 @@ AudioProcessorAudioProcessorEditor::AudioProcessorAudioProcessorEditor(AudioProc
 	_editor.setText(String(_delaySlider.getValue()));
 	addAndMakeVisible(_editor);
 	_editor.setBounds(RelativeRectangle(String("parent.right - 20 - ") + String(textEditWidth) + ", parent.top + 20, parent.right - 20, top + 20"));
-
 }
 
 AudioProcessorAudioProcessorEditor::~AudioProcessorAudioProcessorEditor()
@@ -76,4 +81,10 @@ void AudioProcessorAudioProcessorEditor::textEditorReturnKeyPressed(TextEditor &
 	{
 		_delaySlider.setValue(editor.getText().getDoubleValue());
 	}
+}
+
+void AudioProcessorAudioProcessorEditor::buttonClicked(Button* button)
+{
+	if (button->getComponentID() == "onOffSwitch")
+		processor.setEnabled(button->getToggleState());
 }

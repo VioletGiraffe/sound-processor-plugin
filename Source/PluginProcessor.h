@@ -49,9 +49,12 @@ public:
 	void onDelayChanged(double delay);
 	double delay() const;
 
+	void setEnabled(bool enabled);
+
 private:
 	float _delayMs = 0.0f;
 	uint32_t _delayNumSamples = 0;
+	bool _enabled = false;
 
 	std::vector<float> _delayBuffer;
 

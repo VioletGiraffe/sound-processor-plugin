@@ -108,6 +108,9 @@ void AudioProcessorWithDelays::processBlock(AudioSampleBuffer& buffer, MidiBuffe
 
 	std::lock_guard<std::mutex> guard(m_mutex);
 
+	if (!_enabled)
+		return;
+
 	for (int channel = 0; channel < getTotalNumInputChannels(); ++channel)
 	{
 		if (channel == 0)
@@ -162,6 +165,12 @@ void AudioProcessorWithDelays::onDelayChanged(double delay)
 double AudioProcessorWithDelays::delay() const
 {
 	return (double)_delayMs;
+}
+
+void AudioProcessorWithDelays::setEnabled(bool enabled)
+{
+	std::lock_guard<std::mutex> guard(m_mutex);
+	_enabled = enabled;
 }
 
 //==============================================================================

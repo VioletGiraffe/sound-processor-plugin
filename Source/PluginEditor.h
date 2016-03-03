@@ -20,7 +20,8 @@
 */
 class AudioProcessorAudioProcessorEditor : public AudioProcessorEditor,
 	private Slider::Listener,
-	private TextEditor::Listener
+	private TextEditor::Listener,
+	private ToggleButton::Listener
 {
 public:
 	AudioProcessorAudioProcessorEditor(AudioProcessorWithDelays&);
@@ -31,8 +32,8 @@ public:
 	void resized() override;
 
 	void sliderValueChanged (Slider* slider) override;
-
 	void textEditorReturnKeyPressed (TextEditor & editor) override;
+	void buttonClicked (Button*  button) override;
 
 private:
 	// This reference is provided as a quick way for your editor to
@@ -41,6 +42,7 @@ private:
 
 	Slider _delaySlider;
 	TextEditor _editor;
+	ToggleButton _onOffSwitch;
 
 	JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(AudioProcessorAudioProcessorEditor)
 };
