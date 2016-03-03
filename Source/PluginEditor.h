@@ -18,20 +18,24 @@
 //==============================================================================
 /**
 */
-class AudioProcessorAudioProcessorEditor : public AudioProcessorEditor
+class AudioProcessorAudioProcessorEditor : public AudioProcessorEditor, private Slider::Listener
 {
 public:
-	AudioProcessorAudioProcessorEditor(AudioProcessorAudioProcessor&);
+	AudioProcessorAudioProcessorEditor(AudioProcessorWithDelays&);
 	~AudioProcessorAudioProcessorEditor();
 
 	//==============================================================================
 	void paint(Graphics&) override;
 	void resized() override;
 
+	void sliderValueChanged (Slider* slider) override;
+
 private:
 	// This reference is provided as a quick way for your editor to
 	// access the processor object that created it.
-	AudioProcessorAudioProcessor& processor;
+	AudioProcessorWithDelays& processor;
+
+	Slider _delaySlider;
 
 	JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(AudioProcessorAudioProcessorEditor)
 };

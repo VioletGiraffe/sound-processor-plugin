@@ -13,16 +13,18 @@
 
 #include "../JuceLibraryCode/JuceHeader.h"
 
+#include <atomic>
+
 
 //==============================================================================
 /**
 */
-class AudioProcessorAudioProcessor : public AudioProcessor
+class AudioProcessorWithDelays : public AudioProcessor
 {
 public:
 	//==============================================================================
-	AudioProcessorAudioProcessor();
-	~AudioProcessorAudioProcessor();
+	AudioProcessorWithDelays();
+	~AudioProcessorWithDelays();
 
 	//==============================================================================
 	void prepareToPlay(double sampleRate, int samplesPerBlock) override;
@@ -53,9 +55,16 @@ public:
 	void getStateInformation(MemoryBlock& destData) override;
 	void setStateInformation(const void* data, int sizeInBytes) override;
 
+	void onDelayChanged(double delay);
+	double delay() const;
+
 private:
+	std::atomic<float> _delayMs {0.0f};
+	std::atomic<uint32_t> _delayNumSamples {0};
+
+
 	//==============================================================================
-	JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(AudioProcessorAudioProcessor)
+	JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(AudioProcessorWithDelays)
 };
 
 

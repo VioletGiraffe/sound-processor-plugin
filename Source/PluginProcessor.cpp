@@ -11,23 +11,25 @@
 #include "PluginProcessor.h"
 #include "PluginEditor.h"
 
+const float SpeedOfSound = 343.2f; // m/s
+
 
 //==============================================================================
-AudioProcessorAudioProcessor::AudioProcessorAudioProcessor()
+AudioProcessorWithDelays::AudioProcessorWithDelays()
 {
 }
 
-AudioProcessorAudioProcessor::~AudioProcessorAudioProcessor()
+AudioProcessorWithDelays::~AudioProcessorWithDelays()
 {
 }
 
 //==============================================================================
-const String AudioProcessorAudioProcessor::getName() const
+const String AudioProcessorWithDelays::getName() const
 {
 	return JucePlugin_Name;
 }
 
-bool AudioProcessorAudioProcessor::acceptsMidi() const
+bool AudioProcessorWithDelays::acceptsMidi() const
 {
 #if JucePlugin_WantsMidiInput
 	return true;
@@ -36,7 +38,7 @@ bool AudioProcessorAudioProcessor::acceptsMidi() const
 #endif
 }
 
-bool AudioProcessorAudioProcessor::producesMidi() const
+bool AudioProcessorWithDelays::producesMidi() const
 {
 #if JucePlugin_ProducesMidiOutput
 	return true;
@@ -45,54 +47,54 @@ bool AudioProcessorAudioProcessor::producesMidi() const
 #endif
 }
 
-bool AudioProcessorAudioProcessor::silenceInProducesSilenceOut() const
+bool AudioProcessorWithDelays::silenceInProducesSilenceOut() const
 {
 	return false;
 }
 
-double AudioProcessorAudioProcessor::getTailLengthSeconds() const
+double AudioProcessorWithDelays::getTailLengthSeconds() const
 {
 	return 0.0;
 }
 
-int AudioProcessorAudioProcessor::getNumPrograms()
+int AudioProcessorWithDelays::getNumPrograms()
 {
 	return 1;   // NB: some hosts don't cope very well if you tell them there are 0 programs,
 	// so this should be at least 1, even if you're not really implementing programs.
 }
 
-int AudioProcessorAudioProcessor::getCurrentProgram()
+int AudioProcessorWithDelays::getCurrentProgram()
 {
 	return 0;
 }
 
-void AudioProcessorAudioProcessor::setCurrentProgram(int index)
+void AudioProcessorWithDelays::setCurrentProgram(int index)
 {
 }
 
-const String AudioProcessorAudioProcessor::getProgramName(int index)
+const String AudioProcessorWithDelays::getProgramName(int index)
 {
 	return String();
 }
 
-void AudioProcessorAudioProcessor::changeProgramName(int index, const String& newName)
+void AudioProcessorWithDelays::changeProgramName(int index, const String& newName)
 {
 }
 
 //==============================================================================
-void AudioProcessorAudioProcessor::prepareToPlay(double sampleRate, int samplesPerBlock)
+void AudioProcessorWithDelays::prepareToPlay(double sampleRate, int samplesPerBlock)
 {
 	// Use this method as the place to do any pre-playback
 	// initialisation that you need..
 }
 
-void AudioProcessorAudioProcessor::releaseResources()
+void AudioProcessorWithDelays::releaseResources()
 {
 	// When playback stops, you can use this as an opportunity to free up any
 	// spare memory, etc.
 }
 
-void AudioProcessorAudioProcessor::processBlock(AudioSampleBuffer& buffer, MidiBuffer& midiMessages)
+void AudioProcessorWithDelays::processBlock(AudioSampleBuffer& buffer, MidiBuffer& /*midiMessages*/)
 {
 	// In case we have more outputs than inputs, this code clears any output
 	// channels that didn't contain input data, (because these aren't
@@ -103,44 +105,58 @@ void AudioProcessorAudioProcessor::processBlock(AudioSampleBuffer& buffer, MidiB
 	for (int i = getTotalNumInputChannels(); i < getTotalNumOutputChannels(); ++i)
 		buffer.clear(i, 0, buffer.getNumSamples());
 
-	// This is the place where you'd normally do the guts of your plugin's
-	// audio processing...
+
 	for (int channel = 0; channel < getTotalNumInputChannels(); ++channel)
 	{
 		float* channelData = buffer.getWritePointer(channel);
-
-		// ..do something to the data...
+		if (channel == 1)
+			for (int i = 0; i < buffer.getNumSamples(); ++i)
+			{
+				const float sample = channelData[i];
+				//channelData[i] = sample*_delayMs/500.0;
+			}
 	}
 }
 
 //==============================================================================
-bool AudioProcessorAudioProcessor::hasEditor() const
+bool AudioProcessorWithDelays::hasEditor() const
 {
-	return true; // (change this to false if you choose to not supply an editor)
+	return true;
 }
 
-AudioProcessorEditor* AudioProcessorAudioProcessor::createEditor()
+AudioProcessorEditor* AudioProcessorWithDelays::createEditor()
 {
 	return new AudioProcessorAudioProcessorEditor(*this);
 }
 
 //==============================================================================
-void AudioProcessorAudioProcessor::getStateInformation(MemoryBlock& destData)
+void AudioProcessorWithDelays::getStateInformation(MemoryBlock& destData)
 {
 	// You should use this method to store your parameters in the memory block.
 	// You could do that either as raw data, or use the XML or ValueTree classes
 	// as intermediaries to make it easy to save and load complex data.
 }
 
-void AudioProcessorAudioProcessor::setStateInformation(const void* data, int sizeInBytes)
+void AudioProcessorWithDelays::setStateInformation(const void* data, int sizeInBytes)
 {
 	// You should use this method to restore your parameters from this memory block,
 	// whose contents will have been created by the getStateInformation() call.
+}
+
+void AudioProcessorWithDelays::onDelayChanged(double delay)
+{
+	_delayMs = (float)delay;
+	_delayNumSamples = (uint32_t)(_delayMs * getSampleRate() / 1000.0f);
+}
+
+double AudioProcessorWithDelays::delay() const
+{
+	return (double)_delayMs;
 }
 
 //==============================================================================
 // This creates new instances of the plugin..
 AudioProcessor* JUCE_CALLTYPE createPluginFilter()
 {
-	return new AudioProcessorAudioProcessor();
+	return new AudioProcessorWithDelays();
 }

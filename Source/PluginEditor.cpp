@@ -13,12 +13,23 @@
 
 
 //==============================================================================
-AudioProcessorAudioProcessorEditor::AudioProcessorAudioProcessorEditor(AudioProcessorAudioProcessor& p)
+AudioProcessorAudioProcessorEditor::AudioProcessorAudioProcessorEditor(AudioProcessorWithDelays& p)
 	: AudioProcessorEditor(&p), processor(p)
 {
 	// Make sure that before the constructor has finished, you've set the
 	// editor's size to whatever you need it to be.
 	setSize(400, 300);
+
+	_delaySlider.setSliderStyle(Slider::LinearBar);
+	_delaySlider.setRange(0.0, 15.0, 0.1);
+	_delaySlider.setTextBoxStyle(Slider::NoTextBox, false, 90, 0);
+	_delaySlider.setPopupDisplayEnabled(true, this);
+	_delaySlider.setTextValueSuffix(" ms delay");
+	_delaySlider.setValue(processor.delay());
+	_delaySlider.addListener(this);
+
+	addAndMakeVisible(_delaySlider);
+
 }
 
 AudioProcessorAudioProcessorEditor::~AudioProcessorAudioProcessorEditor()
@@ -29,14 +40,20 @@ AudioProcessorAudioProcessorEditor::~AudioProcessorAudioProcessorEditor()
 void AudioProcessorAudioProcessorEditor::paint(Graphics& g)
 {
 	g.fillAll(Colours::white);
-
-	g.setColour(Colours::black);
-	g.setFont(15.0f);
-	g.drawFittedText("Hello World!", getLocalBounds(), Justification::centred, 1);
+// 
+// 	g.setColour(Colours::black);
+// 	g.setFont(15.0f);
+// 	g.drawFittedText("Hello World!", getLocalBounds(), Justification::centred, 1);
 }
 
 void AudioProcessorAudioProcessorEditor::resized()
 {
-	// This is generally where you'll want to lay out the positions of any
-	// subcomponents in your editor..
+	const int margin = 20;
+	_delaySlider.setBounds(margin, margin, getWidth() - 2*margin, 20);
+}
+
+void AudioProcessorAudioProcessorEditor::sliderValueChanged(Slider* slider)
+{
+	if (slider == &_delaySlider)
+		processor.onDelayChanged(_delaySlider.getValue());
 }
