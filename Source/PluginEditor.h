@@ -18,7 +18,9 @@
 //==============================================================================
 /**
 */
-class AudioProcessorAudioProcessorEditor : public AudioProcessorEditor, private Slider::Listener
+class AudioProcessorAudioProcessorEditor : public AudioProcessorEditor,
+	private Slider::Listener,
+	private TextEditor::Listener
 {
 public:
 	AudioProcessorAudioProcessorEditor(AudioProcessorWithDelays&);
@@ -30,12 +32,15 @@ public:
 
 	void sliderValueChanged (Slider* slider) override;
 
+	void textEditorReturnKeyPressed (TextEditor & editor) override;
+
 private:
 	// This reference is provided as a quick way for your editor to
 	// access the processor object that created it.
 	AudioProcessorWithDelays& processor;
 
 	Slider _delaySlider;
+	TextEditor _editor;
 
 	JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(AudioProcessorAudioProcessorEditor)
 };

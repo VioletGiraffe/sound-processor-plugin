@@ -11,7 +11,6 @@
 #include "PluginProcessor.h"
 #include "PluginEditor.h"
 
-
 //==============================================================================
 AudioProcessorAudioProcessorEditor::AudioProcessorAudioProcessorEditor(AudioProcessorWithDelays& p)
 	: AudioProcessorEditor(&p), processor(p)
@@ -21,14 +20,25 @@ AudioProcessorAudioProcessorEditor::AudioProcessorAudioProcessorEditor(AudioProc
 	setSize(400, 300);
 
 	_delaySlider.setSliderStyle(Slider::LinearBar);
-	_delaySlider.setRange(0.0, 15.0, 0.1);
+	_delaySlider.setRange(0.0, 15.0, 0.01);
 	_delaySlider.setTextBoxStyle(Slider::NoTextBox, false, 90, 0);
 	_delaySlider.setPopupDisplayEnabled(true, this);
 	_delaySlider.setTextValueSuffix(" ms delay");
 	_delaySlider.setValue(processor.delay());
 	_delaySlider.addListener(this);
+	_delaySlider.setComponentID("delaySlider");
+
+	const int textEditWidth = 50;
 
 	addAndMakeVisible(_delaySlider);
+	_delaySlider.setBounds(RelativeRectangle(String("parent.left + 20, parent.top + 20, parent.right - 20 - 10 - ") + String(textEditWidth) + ", top + 20"));
+
+	_editor.setMultiLine(false);
+	_editor.setComponentID("delayEditor");
+	_editor.addListener(this);
+	_editor.setText(String(_delaySlider.getValue()));
+	addAndMakeVisible(_editor);
+	_editor.setBounds(RelativeRectangle(String("parent.right - 20 - ") + String(textEditWidth) + ", parent.top + 20, parent.right - 20, top + 20"));
 
 }
 
@@ -39,7 +49,7 @@ AudioProcessorAudioProcessorEditor::~AudioProcessorAudioProcessorEditor()
 //==============================================================================
 void AudioProcessorAudioProcessorEditor::paint(Graphics& g)
 {
-	g.fillAll(Colours::white);
+	g.fillAll(Colour(251, 251, 251));
 // 
 // 	g.setColour(Colours::black);
 // 	g.setFont(15.0f);
@@ -49,11 +59,21 @@ void AudioProcessorAudioProcessorEditor::paint(Graphics& g)
 void AudioProcessorAudioProcessorEditor::resized()
 {
 	const int margin = 20;
-	_delaySlider.setBounds(margin, margin, getWidth() - 2*margin, 20);
 }
 
 void AudioProcessorAudioProcessorEditor::sliderValueChanged(Slider* slider)
 {
 	if (slider == &_delaySlider)
+	{
+		_editor.setText(String(_delaySlider.getValue()));
 		processor.onDelayChanged(_delaySlider.getValue());
+	}
+}
+
+void AudioProcessorAudioProcessorEditor::textEditorReturnKeyPressed(TextEditor & editor)
+{
+	if (editor.getComponentID() == "delayEditor")
+	{
+		_delaySlider.setValue(editor.getText().getDoubleValue());
+	}
 }
