@@ -47,7 +47,6 @@ public:
 	void setStateInformation(const void* data, int sizeInBytes) override;
 
 	void onDelayChanged(double delay);
-	double delay() const;
 
 	void setEnabled(bool enabled);
 

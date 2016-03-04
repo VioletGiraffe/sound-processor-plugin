@@ -10,6 +10,8 @@
 
 #include "PluginProcessor.h"
 #include "PluginEditor.h"
+#include "util/Settings.h"
+#include "settings_keys.h"
 
 //==============================================================================
 AudioProcessorAudioProcessorEditor::AudioProcessorAudioProcessorEditor(AudioProcessorWithDelays& p)
@@ -22,6 +24,7 @@ AudioProcessorAudioProcessorEditor::AudioProcessorAudioProcessorEditor(AudioProc
 	_onOffSwitch.setComponentID("onOffSwitch");
 	_onOffSwitch.setButtonText("On");
 	_onOffSwitch.addListener(this);
+	_onOffSwitch.setToggleState(Settings::instance().value(SETTINGS_KEY_DELAY_ON, SETTINGS_DEFAULT_DELAY_ON), juce::sendNotificationSync);
 	addAndMakeVisible(_onOffSwitch);
 	_onOffSwitch.setBounds(RelativeRectangle("parent.left + 10, parent.top + 20, left + 50, top + 20"));
 
@@ -30,7 +33,7 @@ AudioProcessorAudioProcessorEditor::AudioProcessorAudioProcessorEditor(AudioProc
 	_delaySlider.setTextBoxStyle(Slider::NoTextBox, false, 90, 0);
 	_delaySlider.setPopupDisplayEnabled(true, this);
 	_delaySlider.setTextValueSuffix(" ms delay");
-	_delaySlider.setValue(processor.delay());
+	_delaySlider.setValue(Settings::instance().value(SETTINGS_KEY_FRONT_CHANNEL_DELAY_VALUE, SETTINGS_DEFAULT_FRONT_CHANNEL_DELAY_VALUE));
 	_delaySlider.addListener(this);
 	_delaySlider.setComponentID("delaySlider");
 
@@ -63,13 +66,13 @@ void AudioProcessorAudioProcessorEditor::paint(Graphics& g)
 
 void AudioProcessorAudioProcessorEditor::resized()
 {
-	const int margin = 20;
 }
 
 void AudioProcessorAudioProcessorEditor::sliderValueChanged(Slider* slider)
 {
 	if (slider == &_delaySlider)
 	{
+		Settings::instance().setValue(SETTINGS_KEY_FRONT_CHANNEL_DELAY_VALUE, _delaySlider.getValue());
 		_editor.setText(String(_delaySlider.getValue()));
 		processor.onDelayChanged(_delaySlider.getValue());
 	}
@@ -78,13 +81,14 @@ void AudioProcessorAudioProcessorEditor::sliderValueChanged(Slider* slider)
 void AudioProcessorAudioProcessorEditor::textEditorReturnKeyPressed(TextEditor & editor)
 {
 	if (editor.getComponentID() == "delayEditor")
-	{
 		_delaySlider.setValue(editor.getText().getDoubleValue());
-	}
 }
 
 void AudioProcessorAudioProcessorEditor::buttonClicked(Button* button)
 {
 	if (button->getComponentID() == "onOffSwitch")
+	{
+		Settings::instance().setValue(SETTINGS_KEY_DELAY_ON, button->getToggleState());
 		processor.setEnabled(button->getToggleState());
+	}
 }

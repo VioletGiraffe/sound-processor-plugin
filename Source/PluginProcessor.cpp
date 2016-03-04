@@ -10,6 +10,8 @@
 
 #include "PluginProcessor.h"
 #include "PluginEditor.h"
+#include "settings_keys.h"
+#include "util/Settings.h"
 
 #include <assert.h>
 
@@ -19,6 +21,9 @@ const float SpeedOfSound = 343.2f; // m/s
 //==============================================================================
 AudioProcessorWithDelays::AudioProcessorWithDelays()
 {
+	const auto& settings = Settings::instance();
+	onDelayChanged(settings.value(SETTINGS_KEY_FRONT_CHANNEL_DELAY_VALUE, SETTINGS_DEFAULT_FRONT_CHANNEL_DELAY_VALUE));
+	_enabled = settings.value(SETTINGS_KEY_DELAY_ON, SETTINGS_DEFAULT_DELAY_ON);
 }
 
 AudioProcessorWithDelays::~AudioProcessorWithDelays()
@@ -160,11 +165,6 @@ void AudioProcessorWithDelays::onDelayChanged(double delay)
 	std::lock_guard<std::mutex> guard(m_mutex);
 	_delayMs = (float)delay;
 	_delayNumSamples = (uint32_t)(_delayMs * getSampleRate() / 1000.0f);
-}
-
-double AudioProcessorWithDelays::delay() const
-{
-	return (double)_delayMs;
 }
 
 void AudioProcessorWithDelays::setEnabled(bool enabled)

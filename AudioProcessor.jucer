@@ -12,6 +12,8 @@
               pluginAAXCategory="AAX_ePlugInCategory_Dynamics" jucerVersion="4.1.0">
   <MAINGROUP id="h5Lksj" name="AudioProcessor">
     <GROUP id="{C59ECA6C-4E37-AB58-8392-29C103589DCB}" name="Source">
+      <FILE id="nKo5Tv" name="Settings.cpp" compile="1" resource="0" file="Source/util/Settings.cpp"/>
+      <FILE id="ydBe03" name="Settings.h" compile="0" resource="0" file="Source/util/Settings.h"/>
       <FILE id="kG8Q0I" name="PluginProcessor.cpp" compile="1" resource="0"
             file="Source/PluginProcessor.cpp"/>
       <FILE id="xfxfbu" name="PluginProcessor.h" compile="0" resource="0"
