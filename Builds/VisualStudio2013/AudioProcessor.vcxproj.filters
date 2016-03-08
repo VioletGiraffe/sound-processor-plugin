@@ -304,6 +304,9 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\Source\util\util.cpp">
+      <Filter>AudioProcessor\Source</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\Source\util\Settings.cpp">
       <Filter>AudioProcessor\Source</Filter>
     </ClCompile>
@@ -1560,6 +1563,9 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\Source\util\util.h">
+      <Filter>AudioProcessor\Source</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\Source\util\Settings.h">
       <Filter>AudioProcessor\Source</Filter>
     </ClInclude>

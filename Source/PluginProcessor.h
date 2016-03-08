@@ -6,6 +6,19 @@
 #include <mutex>
 #include <vector>
 
+struct ChannelProcessor
+{
+	inline ChannelProcessor(int channelId) : _channelId(channelId) {}
+	ChannelProcessor& operator=(const ChannelProcessor& other) = delete;
+
+	const int _channelId;
+	float _delayMs = 0.0f;
+	uint32_t _delayNumSamples = 0;
+	bool _enabled = false;
+
+	std::vector<float> _delayBuffer;
+};
+
 
 //==============================================================================
 /**
@@ -46,18 +59,16 @@ public:
 	void getStateInformation(MemoryBlock& destData) override;
 	void setStateInformation(const void* data, int sizeInBytes) override;
 
-	void onDelayChanged(double delay);
-
-	void setEnabled(bool enabled);
+	void onDelayChanged(double delay, int channelId);
+	void setEnabled(bool enabled, int channelId);
 
 private:
-	float _delayMs = 0.0f;
-	uint32_t _delayNumSamples = 0;
-	bool _enabled = false;
+	ChannelProcessor& processorByChannelId(int id);
 
-	std::vector<float> _delayBuffer;
-
+private:
 	std::mutex m_mutex;
+
+	std::vector<ChannelProcessor> _processors;
 
 	//==============================================================================
 	JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(AudioProcessorWithDelays)
