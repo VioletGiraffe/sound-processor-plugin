@@ -8,7 +8,7 @@ DelayEditor::DelayEditor(AudioProcessorWithDelays& processor, int channelId) : _
 {
 	_onOffSwitch.setButtonText("On");
 	_onOffSwitch.addListener(this);
-	_onOffSwitch.setToggleState(Settings::instance().value(SETTINGS_KEY_DELAY_ON(channelId), SETTINGS_DEFAULT_DELAY_ON), juce::sendNotificationSync);
+	_onOffSwitch.setToggleState(_processor.isEnabled(channelId), juce::sendNotificationSync);
 	addAndMakeVisible(_onOffSwitch);
 
 	_delaySlider.setSliderStyle(Slider::LinearBar);
@@ -16,7 +16,7 @@ DelayEditor::DelayEditor(AudioProcessorWithDelays& processor, int channelId) : _
 	_delaySlider.setTextBoxStyle(Slider::NoTextBox, false, 90, 0);
 	_delaySlider.setPopupDisplayEnabled(true, this);
 	_delaySlider.setTextValueSuffix(" ms");
-	_delaySlider.setValue(Settings::instance().value(SETTINGS_KEY_FRONT_CHANNEL_DELAY_VALUE(channelId), SETTINGS_DEFAULT_FRONT_CHANNEL_DELAY_VALUE));
+	_delaySlider.setValue(_processor.delay(channelId));
 	_delaySlider.addListener(this);
 	addAndMakeVisible(_delaySlider);
 

@@ -85,9 +85,9 @@ void AudioProcessorWithDelays::prepareToPlay(double sampleRate, int /*samplesPer
 		ChannelProcessor& p = _processors.back();
 		p._delayBuffer.resize((size_t)(sampleRate * 0.5), 0.0f); // 500 ms buffer
 
-		const auto& settings = Settings::instance();
-		onDelayChanged(settings.value(SETTINGS_KEY_FRONT_CHANNEL_DELAY_VALUE(i), SETTINGS_DEFAULT_FRONT_CHANNEL_DELAY_VALUE), i);
-		p._enabled = settings.value(SETTINGS_KEY_DELAY_ON(i), SETTINGS_DEFAULT_DELAY_ON);
+// 		const auto& settings = Settings::instance();
+// 		onDelayChanged(settings.value(SETTINGS_KEY_FRONT_CHANNEL_DELAY_VALUE(i), SETTINGS_DEFAULT_FRONT_CHANNEL_DELAY_VALUE), i);
+// 		p._enabled = settings.value(SETTINGS_KEY_DELAY_ON(i), SETTINGS_DEFAULT_DELAY_ON);
 	}
 }
 
@@ -110,7 +110,7 @@ void AudioProcessorWithDelays::processBlock(AudioSampleBuffer& buffer, MidiBuffe
 
 	std::lock_guard<std::mutex> guard(m_mutex);
 
-	for (int channel = 0; channel < getTotalNumInputChannels(); ++channel)
+	for (int channel = 0; channel < getTotalNumOutputChannels(); ++channel)
 	{
 		ChannelProcessor& processor = processorByChannelId(channel);
 		if (!processor._enabled)
@@ -163,6 +163,14 @@ void AudioProcessorWithDelays::onDelayChanged(double delay, int channelId)
 	p._delayNumSamples = (uint32_t)(p._delayMs * getSampleRate() / 1000.0f);
 }
 
+double AudioProcessorWithDelays::delay(int channelId) const
+{
+	std::lock_guard<std::mutex> guard(m_mutex);
+	const ChannelProcessor& p = processorByChannelId(channelId);
+
+	return p._delayMs;
+}
+
 void AudioProcessorWithDelays::setEnabled(bool enabled, int channelId)
 {
 	std::lock_guard<std::mutex> guard(m_mutex);
@@ -170,7 +178,26 @@ void AudioProcessorWithDelays::setEnabled(bool enabled, int channelId)
 	p._enabled = enabled;
 }
 
+bool AudioProcessorWithDelays::isEnabled(int channelId) const
+{
+	std::lock_guard<std::mutex> guard(m_mutex);
+	const ChannelProcessor& p = processorByChannelId(channelId);
+	return p._enabled;
+}
+
 ChannelProcessor& AudioProcessorWithDelays::processorByChannelId(int id)
+{
+	auto it = std::find_if(_processors.begin(), _processors.end(), [id](const ChannelProcessor& p) {
+		return p._channelId == id;
+	});
+
+	if (it != _processors.end())
+		return *it;
+	else
+		throw std::runtime_error((std::string("Processor not found for channel") + std::to_string(id)).c_str());
+}
+
+const ChannelProcessor& AudioProcessorWithDelays::processorByChannelId(int id) const
 {
 	auto it = std::find_if(_processors.begin(), _processors.end(), [id](const ChannelProcessor& p) {
 		return p._channelId == id;

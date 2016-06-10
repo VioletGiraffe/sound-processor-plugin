@@ -60,13 +60,16 @@ public:
 	void setStateInformation(const void* data, int sizeInBytes) override;
 
 	void onDelayChanged(double delay, int channelId);
+	double delay(int channelId) const;
 	void setEnabled(bool enabled, int channelId);
+	bool isEnabled(int channelId) const;
 
 private:
 	ChannelProcessor& processorByChannelId(int id);
+	const ChannelProcessor& processorByChannelId(int id) const;
 
 private:
-	std::mutex m_mutex;
+	mutable std::mutex m_mutex;
 
 	std::vector<ChannelProcessor> _processors;
 
