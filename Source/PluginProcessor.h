@@ -3,6 +3,7 @@
 
 #include "../JuceLibraryCode/JuceHeader.h"
 
+#include <functional>
 #include <mutex>
 #include <vector>
 
@@ -29,6 +30,8 @@ public:
 	//==============================================================================
 	AudioProcessorWithDelays();
 	~AudioProcessorWithDelays();
+
+	void setUiUpdateRequiredCallback(const std::function<void ()>& callback);
 
 	//==============================================================================
 	void prepareToPlay(double sampleRate, int samplesPerBlock) override;
@@ -59,7 +62,7 @@ public:
 	void getStateInformation(MemoryBlock& destData) override;
 	void setStateInformation(const void* data, int sizeInBytes) override;
 
-	void onDelayChanged(double delay, int channelId);
+	void setDelay(double delay, int channelId);
 	double delay(int channelId) const;
 	void setEnabled(bool enabled, int channelId);
 	bool isEnabled(int channelId) const;
@@ -72,6 +75,9 @@ private:
 	mutable std::mutex m_mutex;
 
 	std::vector<ChannelProcessor> _processors;
+	double _currentSampleRate = 0.0;
+
+	std::function<void ()> _uiUpdateRequiredCallback = [](){};
 
 	//==============================================================================
 	JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(AudioProcessorWithDelays)

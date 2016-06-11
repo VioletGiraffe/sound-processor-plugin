@@ -1,7 +1,5 @@
 #include "PluginProcessor.h"
 #include "PluginEditor.h"
-#include "settings_keys.h"
-#include "util/Settings.h"
 
 #include <assert.h>
 #include <string>
@@ -17,6 +15,13 @@ AudioProcessorWithDelays::AudioProcessorWithDelays()
 AudioProcessorWithDelays::~AudioProcessorWithDelays()
 {
 }
+
+void AudioProcessorWithDelays::setUiUpdateRequiredCallback(const std::function<void()>& callback)
+{
+	assert(callback);
+	_uiUpdateRequiredCallback = callback;
+}
+
 
 //==============================================================================
 const String AudioProcessorWithDelays::getName() const
@@ -79,16 +84,24 @@ void AudioProcessorWithDelays::changeProgramName(int /*index*/, const String& /*
 //==============================================================================
 void AudioProcessorWithDelays::prepareToPlay(double sampleRate, int /*samplesPerBlock*/)
 {
+	// prepareToPlay() may be called more than once with the same parameters.
+	// The catch is that the second call is not followed by setStateInformation() so we cannot easily recreate the state.
+	// So we want to keep the previously restored (via setStateInformation) state , if possible.
+	if (sampleRate == _currentSampleRate && _processors.size() == (size_t)getTotalNumOutputChannels())
+		return;
+
+	// We should only arrive here if it's the first prepareToPlay() call.
+	// Or, indeed, if the sample rate has changed, in which case we will not be able to restore the state, but it shouldn't be a common occurrence.
+	assert(_processors.empty());
+	_processors.clear();
 	for (int i = 0; i < getTotalNumOutputChannels(); ++i)
 	{
 		_processors.emplace_back(i);
 		ChannelProcessor& p = _processors.back();
 		p._delayBuffer.resize((size_t)(sampleRate * 0.5), 0.0f); // 500 ms buffer
-
-// 		const auto& settings = Settings::instance();
-// 		onDelayChanged(settings.value(SETTINGS_KEY_FRONT_CHANNEL_DELAY_VALUE(i), SETTINGS_DEFAULT_FRONT_CHANNEL_DELAY_VALUE), i);
-// 		p._enabled = settings.value(SETTINGS_KEY_DELAY_ON(i), SETTINGS_DEFAULT_DELAY_ON);
 	}
+
+	_currentSampleRate = sampleRate;
 }
 
 void AudioProcessorWithDelays::releaseResources()
@@ -142,25 +155,47 @@ AudioProcessorEditor* AudioProcessorWithDelays::createEditor()
 }
 
 //==============================================================================
-void AudioProcessorWithDelays::getStateInformation(MemoryBlock& /*destData*/)
+void AudioProcessorWithDelays::getStateInformation(MemoryBlock& destData)
 {
-	// You should use this method to store your parameters in the memory block.
-	// You could do that either as raw data, or use the XML or ValueTree classes
-	// as intermediaries to make it easy to save and load complex data.
+	XmlElement root("Root");
+	for (int i = 0; i < getTotalNumOutputChannels(); ++i)
+	{
+		XmlElement *el = root.createNewChildElement("Channel");
+		el->setAttribute("id", i);
+		el->setAttribute("delay", delay(i));
+		el->setAttribute("enabled", isEnabled(i) ? 1 : 0);
+	}
+	
+	copyXmlToBinary(root, destData);
 }
 
-void AudioProcessorWithDelays::setStateInformation(const void* /*data*/, int /*sizeInBytes*/)
+void AudioProcessorWithDelays::setStateInformation(const void* data, int sizeInBytes)
 {
-	// You should use this method to restore your parameters from this memory block,
-	// whose contents will have been created by the getStateInformation() call.
+	XmlElement* pRoot = getXmlFromBinary(data, sizeInBytes);
+	if (!pRoot)
+		return;
+
+	forEachXmlChildElement(*pRoot, pChild)
+	{
+		if (pChild && pChild->hasTagName("Channel"))
+		{
+			const int id = pChild->getIntAttribute("id");
+			setDelay(pChild->getDoubleAttribute("delay"), id);
+			setEnabled(pChild->getDoubleAttribute("enabled") == 0 ? false : true, id);
+		}
+	}
+
+	delete pRoot;
 }
 
-void AudioProcessorWithDelays::onDelayChanged(double delay, int channelId)
+void AudioProcessorWithDelays::setDelay(double delay, int channelId)
 {
 	std::lock_guard<std::mutex> guard(m_mutex);
 	ChannelProcessor& p = processorByChannelId(channelId);
 	p._delayMs = (float)delay;
 	p._delayNumSamples = (uint32_t)(p._delayMs * getSampleRate() / 1000.0f);
+
+	_uiUpdateRequiredCallback();
 }
 
 double AudioProcessorWithDelays::delay(int channelId) const
@@ -176,6 +211,8 @@ void AudioProcessorWithDelays::setEnabled(bool enabled, int channelId)
 	std::lock_guard<std::mutex> guard(m_mutex);
 	ChannelProcessor& p = processorByChannelId(channelId);
 	p._enabled = enabled;
+
+	_uiUpdateRequiredCallback();
 }
 
 bool AudioProcessorWithDelays::isEnabled(int channelId) const

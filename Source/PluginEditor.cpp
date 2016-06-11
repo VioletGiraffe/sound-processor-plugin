@@ -1,7 +1,5 @@
 #include "PluginProcessor.h"
 #include "PluginEditor.h"
-#include "util/Settings.h"
-#include "settings_keys.h"
 #include "util/util.h"
 
 DelayEditor::DelayEditor(AudioProcessorWithDelays& processor, int channelId) : _processor(processor), _channelId(channelId)
@@ -28,11 +26,10 @@ DelayEditor::DelayEditor(AudioProcessorWithDelays& processor, int channelId) : _
 
 void DelayEditor::sliderValueChanged(Slider* slider)
 {
-	if (slider == &_delaySlider)
+	if (slider == &_delaySlider && _delaySlider.getValue() != _processor.delay(_channelId))
 	{
-		Settings::instance().setValue(SETTINGS_KEY_FRONT_CHANNEL_DELAY_VALUE(_channelId), _delaySlider.getValue());
 		_editor.setText(String(_delaySlider.getValue()));
-		_processor.onDelayChanged(_delaySlider.getValue(), _channelId);
+		_processor.setDelay(_delaySlider.getValue(), _channelId);
 	}
 }
 
@@ -43,8 +40,9 @@ void DelayEditor::textEditorReturnKeyPressed(TextEditor & editor)
 
 void DelayEditor::buttonClicked(Button* button)
 {
-	Settings::instance().setValue(SETTINGS_KEY_DELAY_ON(_channelId), button->getToggleState());
-	_processor.setEnabled(button->getToggleState(), _channelId);
+	const bool enabled = button->getToggleState();
+	if (enabled != _processor.isEnabled(_channelId))
+		_processor.setEnabled(enabled, _channelId);
 }
 
 void DelayEditor::resized()
