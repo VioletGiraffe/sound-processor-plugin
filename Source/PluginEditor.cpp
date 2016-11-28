@@ -6,11 +6,15 @@ const double SpeedOfSound = 340.0; // m/s at 15C, normal pressure
 const double cmPerMs = SpeedOfSound * 100.0 /* cm in 1 m */ / 1000.0 /* ms in 1 s*/;
 const double msPerCm = 1.0 / SpeedOfSound;
 
+const auto bgColor = Colour{48, 48, 48}, textColor = Colour{200, 200, 200};
+
 DelayEditor::DelayEditor(AudioProcessorWithDelays& processor, int channelId) : _processor(processor), _channelId(channelId)
 {
 	_onOffSwitch.setButtonText("On");
 	_onOffSwitch.addListener(this);
 	_onOffSwitch.setToggleState(_processor.isEnabled(channelId), juce::sendNotificationSync);
+	_onOffSwitch.setColour(ToggleButton::textColourId, textColor);
+	_onOffSwitch.setColour(ToggleButton::tickColourId, Colour(130, 130, 178));
 	addAndMakeVisible(_onOffSwitch);
 
 	_delaySlider.setSliderStyle(Slider::LinearBar);
@@ -25,6 +29,8 @@ DelayEditor::DelayEditor(AudioProcessorWithDelays& processor, int channelId) : _
 	_editor.setMultiLine(false);
 	_editor.addListener(this);
 	_editor.setText(String(_delaySlider.getValue()));
+	_editor.setColour(TextEditor::backgroundColourId, bgColor);
+	_editor.setColour(TextEditor::textColourId, textColor);
 	addAndMakeVisible(_editor);
 }
 
@@ -93,11 +99,7 @@ void AudioProcessorAudioProcessorEditor::createEditor(const int channelId)
 //==============================================================================
 void AudioProcessorAudioProcessorEditor::paint(Graphics& g)
 {
-	g.fillAll(Colour(251, 251, 251));
-// 
-// 	g.setColour(Colours::black);
-// 	g.setFont(15.0f);
-// 	g.drawFittedText("Hello World!", getLocalBounds(), Justification::centred, 1);
+	g.fillAll(bgColor);
 }
 
 void AudioProcessorAudioProcessorEditor::resized()
