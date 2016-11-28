@@ -2,6 +2,10 @@
 #include "PluginEditor.h"
 #include "util/util.h"
 
+const double SpeedOfSound = 340.0; // m/s at 15C, normal pressure
+const double cmPerMs = SpeedOfSound * 100.0 /* cm in 1 m */ / 1000.0 /* ms in 1 s*/;
+const double msPerCm = 1.0 / SpeedOfSound;
+
 DelayEditor::DelayEditor(AudioProcessorWithDelays& processor, int channelId) : _processor(processor), _channelId(channelId)
 {
 	_onOffSwitch.setButtonText("On");
@@ -10,10 +14,10 @@ DelayEditor::DelayEditor(AudioProcessorWithDelays& processor, int channelId) : _
 	addAndMakeVisible(_onOffSwitch);
 
 	_delaySlider.setSliderStyle(Slider::LinearBar);
-	_delaySlider.setRange(0.0, 15.0, 0.01);
+	_delaySlider.setRange(0.0, 200, 0.1);
 	_delaySlider.setTextBoxStyle(Slider::NoTextBox, false, 90, 0);
 	_delaySlider.setPopupDisplayEnabled(true, this);
-	_delaySlider.setTextValueSuffix(" ms");
+	_delaySlider.setTextValueSuffix(" cm");
 	_delaySlider.setValue(_processor.delay(channelId));
 	_delaySlider.addListener(this);
 	addAndMakeVisible(_delaySlider);
@@ -26,10 +30,12 @@ DelayEditor::DelayEditor(AudioProcessorWithDelays& processor, int channelId) : _
 
 void DelayEditor::sliderValueChanged(Slider* slider)
 {
-	if (slider == &_delaySlider && _delaySlider.getValue() != _processor.delay(_channelId))
+	const double currentDelayMs = _processor.delay(_channelId);
+	const double newDelay = _delaySlider.getValue() * msPerCm;
+	if (slider == &_delaySlider && fabs(newDelay - currentDelayMs) >= 0.1 * msPerCm)
 	{
 		_editor.setText(String(_delaySlider.getValue()));
-		_processor.setDelay(_delaySlider.getValue(), _channelId);
+		_processor.setDelay(newDelay, _channelId);
 	}
 }
 
