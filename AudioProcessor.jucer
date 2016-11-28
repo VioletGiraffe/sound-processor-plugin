@@ -9,13 +9,11 @@
               pluginIsMidiEffectPlugin="0" pluginSilenceInIsSilenceOut="1"
               pluginEditorRequiresKeys="0" pluginAUExportPrefix="AudioProcessorAU"
               pluginRTASCategory="" aaxIdentifier="com.violetgiraffe.AudioProcessor"
-              pluginAAXCategory="AAX_ePlugInCategory_Dynamics" jucerVersion="4.1.0">
+              pluginAAXCategory="AAX_ePlugInCategory_Dynamics" jucerVersion="4.3.0"
+              buildAUv3="0">
   <MAINGROUP id="h5Lksj" name="AudioProcessor">
     <GROUP id="{C59ECA6C-4E37-AB58-8392-29C103589DCB}" name="Source">
-      <FILE id="DQkYsP" name="util.cpp" compile="1" resource="0" file="Source/util/util.cpp"/>
       <FILE id="GPmYfi" name="util.h" compile="0" resource="0" file="Source/util/util.h"/>
-      <FILE id="nKo5Tv" name="Settings.cpp" compile="1" resource="0" file="Source/util/Settings.cpp"/>
-      <FILE id="ydBe03" name="Settings.h" compile="0" resource="0" file="Source/util/Settings.h"/>
       <FILE id="kG8Q0I" name="PluginProcessor.cpp" compile="1" resource="0"
             file="Source/PluginProcessor.cpp"/>
       <FILE id="xfxfbu" name="PluginProcessor.h" compile="0" resource="0"
@@ -26,8 +24,7 @@
     </GROUP>
   </MAINGROUP>
   <EXPORTFORMATS>
-    <VS2013 targetFolder="Builds/VisualStudio2013" vstFolder="" vst3Folder=""
-            aaxFolder="" rtasFolder="">
+    <VS2015 targetFolder="Builds/VisualStudio2015" vst3Folder="3rdparty/VST3 SDK">
       <CONFIGURATIONS>
         <CONFIGURATION name="Debug" winWarningLevel="4" generateManifest="1" winArchitecture="32-bit"
                        isDebug="1" optimisation="1" targetName="AudioProcessor"/>
@@ -35,20 +32,20 @@
                        isDebug="0" optimisation="3" targetName="AudioProcessor"/>
       </CONFIGURATIONS>
       <MODULEPATHS>
-        <MODULEPATH id="juce_core" path="3rdparty/juce-grapefruit-windows/modules"/>
-        <MODULEPATH id="juce_events" path="3rdparty/juce-grapefruit-windows/modules"/>
-        <MODULEPATH id="juce_graphics" path="3rdparty/juce-grapefruit-windows/modules"/>
-        <MODULEPATH id="juce_data_structures" path="3rdparty/juce-grapefruit-windows/modules"/>
-        <MODULEPATH id="juce_gui_basics" path="3rdparty/juce-grapefruit-windows/modules"/>
-        <MODULEPATH id="juce_gui_extra" path="3rdparty/juce-grapefruit-windows/modules"/>
         <MODULEPATH id="juce_opengl" path="3rdparty/juce-grapefruit-windows/modules"/>
-        <MODULEPATH id="juce_audio_basics" path="3rdparty/juce-grapefruit-windows/modules"/>
-        <MODULEPATH id="juce_audio_devices" path="3rdparty/juce-grapefruit-windows/modules"/>
-        <MODULEPATH id="juce_audio_formats" path="3rdparty/juce-grapefruit-windows/modules"/>
+        <MODULEPATH id="juce_gui_extra" path="3rdparty/juce-grapefruit-windows/modules"/>
+        <MODULEPATH id="juce_gui_basics" path="3rdparty/juce-grapefruit-windows/modules"/>
+        <MODULEPATH id="juce_graphics" path="3rdparty/juce-grapefruit-windows/modules"/>
+        <MODULEPATH id="juce_events" path="3rdparty/juce-grapefruit-windows/modules"/>
+        <MODULEPATH id="juce_data_structures" path="3rdparty/juce-grapefruit-windows/modules"/>
+        <MODULEPATH id="juce_core" path="3rdparty/juce-grapefruit-windows/modules"/>
         <MODULEPATH id="juce_audio_processors" path="3rdparty/juce-grapefruit-windows/modules"/>
         <MODULEPATH id="juce_audio_plugin_client" path="3rdparty/juce-grapefruit-windows/modules"/>
+        <MODULEPATH id="juce_audio_formats" path="3rdparty/juce-grapefruit-windows/modules"/>
+        <MODULEPATH id="juce_audio_devices" path="3rdparty/juce-grapefruit-windows/modules"/>
+        <MODULEPATH id="juce_audio_basics" path="3rdparty/juce-grapefruit-windows/modules"/>
       </MODULEPATHS>
-    </VS2013>
+    </VS2015>
   </EXPORTFORMATS>
   <MODULES>
     <MODULE id="juce_audio_basics" showAllCode="1" useLocalCopy="0"/>
