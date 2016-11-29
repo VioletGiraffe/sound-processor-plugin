@@ -24,7 +24,8 @@
     </GROUP>
   </MAINGROUP>
   <EXPORTFORMATS>
-    <VS2015 targetFolder="Builds/VisualStudio2015" vst3Folder="3rdparty/VST3 SDK">
+    <VS2015 targetFolder="Builds/VisualStudio2015" vst3Folder="3rdparty/VST3 SDK"
+            vstFolder="">
       <CONFIGURATIONS>
         <CONFIGURATION name="Debug" winWarningLevel="4" generateManifest="1" winArchitecture="32-bit"
                        isDebug="1" optimisation="1" targetName="AudioProcessor"/>
