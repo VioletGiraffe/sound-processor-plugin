@@ -3,10 +3,20 @@
 #include "util/util.h"
 
 const double SpeedOfSound = 340.0; // m/s at 15C, normal pressure
-const double cmPerMs = SpeedOfSound * 100.0 /* cm in 1 m */ / 1000.0 /* ms in 1 s*/;
-const double msPerCm = 1.0 / SpeedOfSound;
 
 const auto bgColor = Colour{48, 48, 48}, textColor = Colour{200, 200, 200};
+
+inline double msToCm(double ms)
+{
+	static const double cmPerMs = SpeedOfSound * 100.0 /* cm in 1 m */ / 1000.0 /* ms in 1 s*/;
+	return ms * cmPerMs;
+}
+
+inline double cmToMs(double cm)
+{
+	static const double msPerOneCm = 1.0 / msToCm(1.0);
+	return cm * msPerOneCm;
+}
 
 DelayEditor::DelayEditor(AudioProcessorWithDelays& processor, int channelId) : _processor(processor), _channelId(channelId)
 {
@@ -22,7 +32,7 @@ DelayEditor::DelayEditor(AudioProcessorWithDelays& processor, int channelId) : _
 	_delaySlider.setTextBoxStyle(Slider::NoTextBox, false, 90, 0);
 	_delaySlider.setPopupDisplayEnabled(true, this);
 	_delaySlider.setTextValueSuffix(" cm");
-	_delaySlider.setValue(_processor.delay(channelId));
+	_delaySlider.setValue(msToCm(_processor.delay(channelId)));
 	_delaySlider.addListener(this);
 	addAndMakeVisible(_delaySlider);
 
@@ -37,11 +47,11 @@ DelayEditor::DelayEditor(AudioProcessorWithDelays& processor, int channelId) : _
 void DelayEditor::sliderValueChanged(Slider* slider)
 {
 	const double currentDelayMs = _processor.delay(_channelId);
-	const double newDelay = _delaySlider.getValue() * msPerCm;
-	if (slider == &_delaySlider && fabs(newDelay - currentDelayMs) >= 0.1 * msPerCm)
+	const double newDelayMs = cmToMs(_delaySlider.getValue());
+	if (slider == &_delaySlider && fabs(newDelayMs - currentDelayMs) >= cmToMs(0.1))
 	{
 		_editor.setText(String(_delaySlider.getValue()));
-		_processor.setDelay(newDelay, _channelId);
+		_processor.setDelay(newDelayMs, _channelId);
 	}
 }
 
