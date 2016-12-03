@@ -24,7 +24,7 @@ DelayEditor::DelayEditor(AudioProcessorWithDelays& processor, int channelId) : _
 	_onOffSwitch.addListener(this);
 	_onOffSwitch.setToggleState(_processor.isEnabled(channelId), juce::sendNotificationSync);
 	_onOffSwitch.setColour(ToggleButton::textColourId, textColor);
-	_onOffSwitch.setColour(ToggleButton::tickColourId, Colour(130, 130, 178));
+	_onOffSwitch.setColour(ToggleButton::tickColourId, Colour(239, 51, 64));
 	addAndMakeVisible(_onOffSwitch);
 
 	_delaySlider.setSliderStyle(Slider::LinearBar);
@@ -41,6 +41,9 @@ DelayEditor::DelayEditor(AudioProcessorWithDelays& processor, int channelId) : _
 	_editor.setText(String(_delaySlider.getValue()));
 	_editor.setColour(TextEditor::backgroundColourId, bgColor);
 	_editor.setColour(TextEditor::textColourId, textColor);
+	_editor.setColour(TextEditor::highlightColourId, _editor.findColour(TextEditor::focusedOutlineColourId));
+	_editor.setColour(TextEditor::highlightColourId, _editor.findColour(TextEditor::focusedOutlineColourId));
+	_editor.setColour(TextEditor::highlightedTextColourId, Colour(255, 255, 255));
 	addAndMakeVisible(_editor);
 }
 
@@ -89,7 +92,7 @@ AudioProcessorAudioProcessorEditor::AudioProcessorAudioProcessorEditor(AudioProc
 {
 	// Make sure that before the constructor has finished, you've set the
 	// editor's size to whatever you need it to be.
-	setSize(500, 400);
+	setSize(400, 200);
 
 	for (int i = 0; i < processor.getTotalNumOutputChannels(); ++i)
 		createEditor(i);
