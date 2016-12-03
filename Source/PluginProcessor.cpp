@@ -74,7 +74,7 @@ void AudioProcessorWithDelays::setCurrentProgram(int /*index*/)
 
 const String AudioProcessorWithDelays::getProgramName(int /*index*/)
 {
-	return String();
+	return "Default program";
 }
 
 void AudioProcessorWithDelays::changeProgramName(int /*index*/, const String& /*newName*/)
@@ -193,7 +193,8 @@ void AudioProcessorWithDelays::setDelay(double delay, int channelId)
 	std::lock_guard<std::mutex> guard(m_mutex);
 	ChannelProcessor& p = processorByChannelId(channelId);
 	p._delayMs = (float)delay;
-	p._delayNumSamples = (uint32_t)(p._delayMs * getSampleRate() / 1000.0f);
+	const double sampleRate = getSampleRate();
+	p._delayNumSamples = (uint32_t)(p._delayMs * sampleRate * 1e-3 + 0.5);
 
 	_uiUpdateRequiredCallback();
 }

@@ -35,9 +35,9 @@ DelayEditor::DelayEditor(AudioProcessorWithDelays& processor, int channelId) : _
 	_delaySlider.setValue(msToCm(_processor.delay(channelId)));
 	_delaySlider.addListener(this);
 	addAndMakeVisible(_delaySlider);
-
 	_editor.setMultiLine(false);
 	_editor.addListener(this);
+
 	_editor.setText(String(_delaySlider.getValue()));
 	_editor.setColour(TextEditor::backgroundColourId, bgColor);
 	_editor.setColour(TextEditor::textColourId, textColor);
