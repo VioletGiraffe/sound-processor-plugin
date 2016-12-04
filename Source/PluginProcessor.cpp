@@ -4,8 +4,7 @@
 #include <assert.h>
 #include <string>
 
-const float SpeedOfSound = 343.2f; // m/s
-
+const double bufferLengthMs = 10.0;
 
 //==============================================================================
 AudioProcessorWithDelays::AudioProcessorWithDelays()
@@ -54,7 +53,7 @@ bool AudioProcessorWithDelays::silenceInProducesSilenceOut() const
 
 double AudioProcessorWithDelays::getTailLengthSeconds() const
 {
-	return 0.0;
+	return bufferLengthMs * 1e-3;
 }
 
 int AudioProcessorWithDelays::getNumPrograms()
@@ -87,21 +86,27 @@ void AudioProcessorWithDelays::prepareToPlay(double sampleRate, int /*samplesPer
 	// prepareToPlay() may be called more than once with the same parameters.
 	// The catch is that the second call is not followed by setStateInformation() so we cannot easily recreate the state.
 	// So we want to keep the previously restored (via setStateInformation) state , if possible.
-	if (sampleRate == _currentSampleRate && _processors.size() == (size_t)getTotalNumOutputChannels())
+	const size_t numChannels = (size_t)getTotalNumOutputChannels();
+	if (sampleRate == _currentSampleRate && _processors.size() == numChannels)
 		return;
 
-	// We should only arrive here if it's the first prepareToPlay() call.
-	// Or, indeed, if the sample rate has changed, in which case we will not be able to restore the state, but it shouldn't be a common occurrence.
-	assert(_processors.empty());
-	_processors.clear();
-	for (int i = 0; i < getTotalNumOutputChannels(); ++i)
+	_currentSampleRate = sampleRate;
+
+	// We should only arrive here if it's the first prepareToPlay() call, or if the sample rate has changed. The latter is not uncommon.
+	if (_processors.size() != numChannels)
 	{
-		_processors.emplace_back(i);
-		ChannelProcessor& p = _processors.back();
-		p._delayBuffer.resize((size_t)(sampleRate * 0.5), 0.0f); // 500 ms buffer
+		assert(_processors.empty());
+		for (int i = 0; i < getTotalNumOutputChannels(); ++i)
+			_processors.emplace_back(i);
 	}
 
-	_currentSampleRate = sampleRate;
+	for (size_t i = 0; i < numChannels; ++i)
+	{
+		ChannelProcessor& p = _processors[i];
+		p._delayBuffer.resize((size_t)(sampleRate * bufferLengthMs * 1e-3), 0.0f); // 10 ms buffer
+
+		setDelay(delay(i), i); // This will update the ChannelProcessor properly in case this prepareToPlay call occurred after the settings had been loaded
+	}
 }
 
 void AudioProcessorWithDelays::releaseResources()
@@ -162,8 +167,12 @@ void AudioProcessorWithDelays::getStateInformation(MemoryBlock& destData)
 	{
 		XmlElement *el = root.createNewChildElement("Channel");
 		el->setAttribute("id", i);
-		el->setAttribute("delay", delay(i));
-		el->setAttribute("enabled", isEnabled(i) ? 1 : 0);
+
+		const double delayMs = delay(i);
+		el->setAttribute("delay", delayMs);
+
+		const bool enabled = isEnabled(i);
+		el->setAttribute("enabled", enabled ? 1 : 0);
 	}
 	
 	copyXmlToBinary(root, destData);
@@ -172,6 +181,7 @@ void AudioProcessorWithDelays::getStateInformation(MemoryBlock& destData)
 void AudioProcessorWithDelays::setStateInformation(const void* data, int sizeInBytes)
 {
 	XmlElement* pRoot = getXmlFromBinary(data, sizeInBytes);
+	assert(pRoot);
 	if (!pRoot)
 		return;
 
@@ -180,8 +190,11 @@ void AudioProcessorWithDelays::setStateInformation(const void* data, int sizeInB
 		if (pChild && pChild->hasTagName("Channel"))
 		{
 			const int id = pChild->getIntAttribute("id");
-			setDelay(pChild->getDoubleAttribute("delay"), id);
-			setEnabled(pChild->getDoubleAttribute("enabled") == 0 ? false : true, id);
+			const double delayMs = pChild->getDoubleAttribute("delay");
+			setDelay(delayMs, id);
+
+			const int enabled = pChild->getIntAttribute("enabled");
+			setEnabled(enabled == 0 ? false : true, id);
 		}
 	}
 
