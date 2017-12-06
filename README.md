@@ -1,2 +1,1 @@
-# sound-processor-plugin
-A sound processor VST plugin intended for use in a car PC for fine-tuning the car audio system (delays etc.)
+A VST plugin for fine-tuning audio delay in each channel. Delays are set in centimeters for convenience.
